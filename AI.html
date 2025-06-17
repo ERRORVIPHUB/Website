@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ERROR AI 💥</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+/* === THEMES === */
+body{margin:0;font-family:'Poppins',sans-serif;overflow-x:hidden;transition:background .6s}
+body.theme-dark  {background:linear-gradient(180deg,#150020,#2d004b);color:#fff}
+body.theme-black {background:linear-gradient(180deg,#050505,#1a1a1a);color:#fff}
+body.theme-green {background:linear-gradient(180deg,#00200d,#005b28);color:#fff}
+
+/* === THEME TOGGLE ICON === */
+#themeToggle{position:fixed;top:16px;right:16px;z-index:999;font-size:30px;cursor:pointer;user-select:none;filter:drop-shadow(0 0 6px #0008)}
+
+/* ================================== */
+/* ---------- LOGIN PAGE ------------ */
+/* ================================== */
+#loginPage{display:block;position:relative}
+#mainApp{display:none}
+
+/* login star field */
+#loginPage .stars{position:absolute;inset:0;overflow:hidden;z-index:0;}
+#loginPage .stars span{
+  position:absolute;
+  width:3px;height:3px;background:#fff;border-radius:50%;
+  opacity:.9;
+  animation:loginSpark calc(6s + 6s*var(--rnd)) linear infinite;
+}
+/* fall FROM above the screen TO below it */
+@keyframes loginSpark{
+  0%   {transform:translateY(-110vh) scale(.5);opacity:0}
+  10%  {opacity:1}
+  100% {transform:translateY(110vh) scale(1);opacity:0}
+}
+
+/* login box */
+.login-box{
+  position:relative;z-index:2;
+  max-width:400px;margin:120px auto;padding:30px;text-align:center;
+  background:rgba(40,0,60,.85);border-radius:16px;
+  box-shadow:0 0 25px #ff00ff88;
+}
+.login-box h1{
+  font-size:2.3em;letter-spacing:2px;margin-bottom:10px;
+  background:linear-gradient(90deg,#ff00ff,#00ffff,#ffcc00,#ff00ff);
+  background-size:400% 100%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:colorFlow 6s linear infinite, glowPulse 3s ease-in-out infinite;
+}
+@keyframes colorFlow{0%{background-position:0% 0}100%{background-position:400% 0}}
+@keyframes glowPulse{0%,100%{text-shadow:0 0 10px currentColor}50%{text-shadow:0 0 25px currentColor,0 0 35px currentColor}}
+.login-box input{
+  width:100%;padding:12px;margin-top:20px;font-size:16px;
+  border:none;border-radius:8px;background:#290040;color:#fff;
+}
+.login-box button{
+  margin-top:20px;width:100%;padding:12px;font-size:16px;
+  font-weight:bold;border:none;border-radius:8px;cursor:pointer;
+  background:#ff00cc;color:#fff;transition:background .3s;
+}
+.login-box button:hover{background:#ff33cc}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes borderFade{0%{box-shadow:0 0 0 3px #ff5555}100%{box-shadow:0 0 0 0 transparent}}
+.login-box.shake{animation:shake .5s}
+input.error{animation:borderFade 1s}
+
+/* ================================== */
+/* -------- DASHBOARD PAGE ---------- */
+/* ================================== */
+.dash-stars{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.dash-stars span{
+  position:absolute;width:2px;height:2px;background:#ffffff;border-radius:50%;
+  opacity:.7;animation:dashDrift 10s linear infinite;
+}
+@keyframes dashDrift{0%{transform:translate(0,0) scale(.6);opacity:.8}100%{transform:translate(-25vw,100vh) scale(.3);opacity:0}}
+#mainApp{position:relative;z-index:1;padding-bottom:60px}
+
+/* looping title */
+#title{margin:0 auto 18px;font-size:3.2em;display:flex;gap:.1em;letter-spacing:.06em}
+#title span{display:inline-block;opacity:0;transform:scale(.5);animation:fadeGlowZoom 2.5s forwards}
+@keyframes fadeGlowZoom{0%{opacity:0;transform:scale(.3);color:#ff00ff}
+30%{opacity:1;transform:scale(1.3);color:#00ffff;text-shadow:0 0 10px #00ffff}
+60%{transform:scale(1);color:#ffcc00;text-shadow:0 0 20px #ffcc00}
+100%{color:#ffffff;text-shadow:0 0 10px #ffffff}}
+@keyframes boomPop{0%{opacity:0;transform:scale(.2);color:#ff0044}
+40%{opacity:1;transform:scale(2.4);color:#ff0055;text-shadow:0 0 30px #ff0055,0 0 50px #ff0055}
+70%{transform:scale(.8);color:#fff600}
+100%{transform:scale(1);color:#ffffff;text-shadow:0 0 12px #ffffff}}
+
+/* status / history */
+.status-bar{display:flex;justify-content:space-between;gap:12px;margin:20px auto;width:90%;max-width:460px}
+.status-box{flex:1;background:#3d0072;padding:14px 0;border-radius:10px;text-align:center;font-size:14px;box-shadow:0 0 8px #ff00ff44}
+#prediction{font-size:22px;text-align:center;margin:20px auto;padding:18px 24px;width:90%;max-width:480px;background:#6600cc;border-radius:14px;box-shadow:0 0 12px #c700ff}
+.score{display:flex;justify-content:center;gap:12px;align-items:center;font-size:18px;margin:18px auto;width:90%;max-width:480px;text-align:center}
+.history{margin-top:24px;max-height:55vh;overflow-y:auto;width:90%;max-width:520px;margin:0 auto;padding-right:4px}
+.entry{position:relative;background:#4a0073;color:#fff;padding:26px 28px;margin:22px auto;border-radius:16px;font-size:17px;line-height:1.6;box-shadow:0 0 12px rgba(0,0,0,.35)}
+.entry::before{content:'';position:absolute;left:0;top:0;height:100%;width:8px;border-radius:8px 0 0 8px}
+.entry.pending::before{background:#ffa500;box-shadow:0 0 8px #ffa500aa}
+.entry.win::before    {background:#00ff66;box-shadow:0 0 8px #00ff66aa}
+.entry.loss::before   {background:#ff3333;box-shadow:0 0 8px #ff3333aa}
+.emoji-right{float:right;font-size:26px;margin-left:8px}
+
+/* emojis AE */
+.pending-emoji{animation:clockSpin 2s linear infinite}@keyframes clockSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.win-emoji{animation:trophyPulse 2s ease-in-out infinite}@keyframes trophyPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25);filter:drop-shadow(0 0 6px gold)}}
+.loss-emoji{animation:bombBlast 2s ease-in-out infinite;transform-origin:center}
+@keyframes bombBlast{0%{transform:scale(1);opacity:1}40%{transform:scale(1.4);opacity:0}41%{transform:scale(0);opacity:0}42%{transform:scale(1);opacity:1}100%{transform:scale(1);opacity:1}}
+.streak-badge{position:absolute;top:8px;right:8px;background:#ff9900;color:#fff;font-size:13px;font-weight:bold;padding:2px 8px;border-radius:8px;animation:trophyPulse 1.5s infinite;box-shadow:0 0 8px #ff9900}
+</style>
+</head>
+<body class="theme-dark">
+
+<div id="themeToggle" title="Change theme">🌗</div>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+  <div class="stars" id="starField"></div>
+
+  <div class="login-box" id="loginCard">
+    <h1>ERROR&nbsp;AI&nbsp;💥</h1>
+    <input type="password" id="vipKey" placeholder="Enter Key">
+    <button onclick="validateKey()">Login</button>
+    <p id="errorMsg" style="color:#ff5555;margin-top:10px"></p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp">
+  <div class="dash-stars" id="dashField"></div>
+
+  <h1 id="title"></h1>
+
+  <div class="status-bar">
+    <div class="status-box"><div>⏱ Timer</div><div id="timer">--</div></div>
+    <div class="status-box"><div>📅 Period</div><div id="period">--</div></div>
+  </div>
+
+  <div id="prediction">Prediction: <span id="pred">--</span></div>
+
+  <div class="score">✅ Wins: <span id="wins">0</span> | ❌ Losses: <span id="losses">0</span></div>
+
+  <h2 style="text-align:center;margin-top:18px;font-size:20px;color:#ffccff">📜 Prediction Results</h2>
+  <div class="history" id="historyBox"></div>
+</div>
+
+<script>
+/* ========== STARFIELD GENERATION ========== */
+function spawnStars(field,count,dMin,dMax,drift=false){
+  for(let i=0;i<count;i++){
+    const s=document.createElement('span');
+    s.style.setProperty('--rnd',Math.random());            /* for varied durations */
+    s.style.left=Math.random()*100+'vw';
+    s.style.top=Math.random()*100+'vh';
+    s.style.animationDuration=(dMin+Math.random()*(dMax-dMin))+'s';
+    if(drift) s.style.animationDelay=Math.random()*-10+'s';
+    field.appendChild(s);
+  }
+}
+spawnStars(document.getElementById('starField'),80,6,12,false);
+
+/* ========== THEME TOGGLE ========== */
+const themes=['theme-dark','theme-black','theme-green'];let themeIdx=0;
+themeToggle.onclick=()=>{themeIdx=(themeIdx+1)%themes.length;document.body.className=themes[themeIdx];};
+
+/* ========== TITLE LOOP ========== */
+function renderMainTitle(){
+  const cont=document.getElementById('title');cont.innerHTML='';
+  const chars=['E','R','R','O','R','\u00A0','A','I','💥'];
+  chars.forEach((ch,i)=>{
+    const span=document.createElement('span');span.textContent=ch;
+    if(ch==='💥') span.style.animation='boomPop 2.5s ease-out '+(i*0.25)+'s forwards';
+    else span.style.animationDelay=(i*0.25)+'s';
+    cont.appendChild(span);
+  });
+}
+let titleTimer;function startTitleLoop(){renderMainTitle();titleTimer=setInterval(renderMainTitle,5000);}
+
+/* ========== VOICE ========== */
+function speak(t){
+  const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.pitch=1.1;u.rate=1;
+  u.voice=speechSynthesis.getVoices().find(v=>v.lang.startsWith('en')&&v.name.toLowerCase().includes('female'))||null;
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
+
+/* ========== LOGIN ========= */
+vipKey.addEventListener('keyup',e=>{if(e.key==='Enter')validateKey();});
+function validateKey(){
+  if(vipKey.value.trim()==='ERRORVIP'){
+    loginPage.style.display='none';mainApp.style.display='block';
+    speak('Login successful');startApp();startTitleLoop();
+    spawnStars(document.getElementById('dashField'),80,6,12,true);
+  }else{
+    errorMsg.textContent='❌ Invalid key!';speak('Invalid key');
+    loginCard.classList.add('shake');vipKey.classList.add('error');
+    setTimeout(()=>{loginCard.classList.remove('shake');vipKey.classList.remove('error');},1000);
+  }
+}
+
+/* ========== APP LOGIC ========== */
+const API='https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList';
+const RAND='4a0522c6ecd8410496260e686be2a57c',SIGN='334B5E70A0C9B8918B0B15E517E2069C';
+async function fetchLatest(){
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pageSize:10,pageNo:1,typeId:1,language:0,random:RAND,signature:SIGN,timestamp:Math.floor(Date.now()/1000)})});
+    return (await r.json())?.data?.list?.[0]||null;
+  }catch(e){console.error(e);return null;}
+}
+let win=0,loss=0,streak=0,lastPeriod=null;const historyArr=[];
+const timerEl=timer,periodEl=period,predEl=pred,winsEl=wins,lossesEl=losses,historyBox=document.getElementById('historyBox');
+let timerInt;
+function startTimer(sec){clearInterval(timerInt);timerInt=setInterval(()=>{if(sec<0)return;timerEl.textContent=`${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;sec--;},1000);}
+function confettiFire(pc=260){confetti({particleCount:pc,spread:70,origin:{y:.6}});}
+function predictNext(){return historyArr.filter(h=>h.val>=5).length>=historyArr.length/2?'BIG':'SMALL';}
+function updateScore(){winsEl.textContent=win;lossesEl.textContent=loss;}
+function renderHistory(){
+  historyBox.innerHTML=historyArr.map(i=>`
+    <div class="entry ${i.cls}">
+      📅 <b>Period:</b> ${i.p}<span class="emoji-right ${i.cls}-emoji">${i.e}</span><br>
+      📊 <b>Prediction:</b> ${i.pred}<br>
+      ⚡ <b>Result:</b> ${i.res}
+      ${i.cls==='win'?`<div class="streak-badge">${i.streak>=4?'🔥 ':''}${i.streak}x</div>`:''}
+    </div>`).join('');
+}
+function applyResult(period,num){
+  historyArr.forEach(c=>{
+    if(c.p===period&&c.res==='--'){
+      c.res=num>=5?'BIG':'SMALL';
+      if(c.pred===c.res){
+        win++;streak++;c.cls='win';c.e='🏆';c.streak=streak;
+        if(streak===2)speak('Strike! Two wins!');
+        else if(streak===3)speak('🔥 Three in a row!');
+        else if(streak>=4)speak(`Unstoppable! ${streak} wins!`);else speak('Win');
+        if(streak>=3)confettiFire(streak>=4?320:260);
+      }else{loss++;streak=0;c.cls='loss';c.e='💣';c.streak=0;speak('Loss');}
+    }
+  });
+  updateScore();renderHistory();
+}
+async function loop(){
+  const d=await fetchLatest();if(!d)return;
+  if(d.issueNumber!==lastPeriod){
+    applyResult(d.issueNumber,Number(d.number));lastPeriod=d.issueNumber;
+    const next=(BigInt(d.issueNumber)+1n).toString(),prediction=predictNext();
+    historyArr.unshift({p:next,pred:prediction,res:'--',val:Number(d.number),e:'⏳',cls:'pending',streak});
+    if(historyArr.length>60)historyArr.pop();
+    periodEl.textContent=next;predEl.textContent=prediction;
+    renderHistory();startTimer(55);
+  }
+}
+function startApp(){loop();setInterval(loop,5000);}
+</script>
+</body>
+</html>
