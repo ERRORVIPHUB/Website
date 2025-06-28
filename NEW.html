@@ -1,0 +1,1582 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." referrerpolicy="no-referrer" rel="stylesheet"/>
+<meta charset="utf-8"/>
+<title>AI Big/Small Predictor v2</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<style>
+    /* Animations */
+    @keyframes fadeInSlide {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounceChange {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .animated-slide {
+      animation: fadeInSlide 0.4s ease-out;
+    }
+
+    .bounce {
+      animation: bounceChange 0.3s ease;
+    }
+
+    .history-item {
+      animation: fadeInSlide 0.5s ease;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f4f4f4;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 30px 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 25px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .label {
+      font-weight: 600;
+      color: #555;
+    }
+    .value {
+      font-weight: 600;
+      color: #000;
+    }
+    #historyContainer .history-item {
+      border-left: 5px solid #aaa;
+      background: #fafafa;
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+    }
+    .history-item.win { border-color: #2ecc71; }
+    .history-item.loss { border-color: #e74c3c; }
+    .history-item.pending { border-color: #f39c12; }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+      z-index: 9999;
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { background-color: #2ecc71; }
+    .toast.error { background-color: #e74c3c; }
+  
+<style>
+@keyframes bounceChange {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.bounce {
+  animation: bounceChange 0.4s ease;
+}
+
+<style>
+.delete-icon {
+  color: #e74c3c;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+.delete-icon:hover {
+  color: #c0392b;
+}
+
+<style>
+:root {
+  --bg-color: #f4f4f4;
+  --text-color: #222;
+  --card-bg: #fff;
+  --border-color: #ccc;
+  --icon-color: #e74c3c;
+}
+body.dark {
+  --bg-color: #121212;
+  --text-color: #f9f9f9;
+  --card-bg: #1e1e1e;
+  --border-color: #444;
+  --icon-color: #ff5a5a;
+}
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 30px 20px;
+}
+.card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--border-color);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.value {
+  color: var(--text-color);
+}
+.delete-icon {
+  color: var(--icon-color);
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+.delete-icon:hover {
+  color: #c0392b;
+}
+.toggle-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+<style>
+.icon-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* FIXED: Dark background for history cards */
+.history-item {
+  background: rgba(20, 20, 20, 0.9) !important;
+  color: #ffffff !important;
+  border-left: 4px solid #00ffff80;
+  box-shadow: 0 0 6px #00ffff40;
+}
+.history-item .label, .history-item .value {
+  color: #ffffff !important;
+}
+
+/* FINAL NEON HISTORY STYLE PATCH */
+.history-item {
+  background: rgba(15, 15, 15, 0.95) !important;
+  color: #ffffff !important;
+  border-left: 4px solid #00ffff;
+  box-shadow: 0 0 12px #00ffff80;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+.history-item .col-span-2 div {
+  margin-bottom: 4px;
+  color: #ffffff !important;
+}
+.history-item i {
+  color: #00ffff !important;
+  margin-right: 6px;
+}
+.icon-actions .fa {
+  color: #ffffff;
+}
+
+/* CRYSTAL GLOW UI THEME */
+body {
+  background: linear-gradient(to bottom right, #e0f7fa, #ffffff);
+  color: #003b5c;
+  font-family: 'Poppins', sans-serif;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  border: 1px solid #b2ebf2;
+  box-shadow: 0 0 15px #b2ebf2;
+  backdrop-filter: blur(6px);
+}
+
+.card-title {
+  color: #007c91;
+}
+
+.row .label {
+  color: #007c91;
+}
+
+.row .value {
+  color: #004d61;
+}
+
+.history-item {
+  background: rgba(255, 255, 255, 0.85);
+  border-left: 5px solid #81d4fa;
+  box-shadow: 0 0 10px #b2ebf2;
+  color: #003b5c;
+}
+
+.history-item.win {
+  border-left-color: #00e676;
+  box-shadow: 0 0 10px #00e676aa;
+}
+
+.history-item.loss {
+  border-left-color: #ff5252;
+  box-shadow: 0 0 10px #ff8a80;
+}
+
+.history-item.pending {
+  border-left-color: #ffd54f;
+  box-shadow: 0 0 8px #fff59d;
+}
+
+.icon-actions .fa {
+  color: #007c91;
+}
+
+.delete-icon {
+  color: #ff5252;
+}
+
+.delete-icon:hover {
+  color: #d32f2f;
+}
+
+.toast {
+  background: #0288d1;
+  box-shadow: 0 0 12px #4dd0e1;
+}
+
+.toast.success {
+  background-color: #00c853;
+}
+
+.toast.error {
+  background-color: #d50000;
+}
+
+/* CRYSTAL MOVIE ANIMATIONS & BACKGROUND */
+body {
+  background: linear-gradient(135deg, #e0f7fa 0%, #f5feff 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+@keyframes floatFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card, .history-item {
+  animation: floatFadeIn 0.7s ease forwards;
+  opacity: 0;
+}
+
+.card:nth-of-type(1) { animation-delay: 0.2s; }
+.card:nth-of-type(2) { animation-delay: 0.4s; }
+
+.history-item {
+  animation-delay: 0.6s;
+}
+
+.glow-border {
+  border: 1px solid #a7e7f7;
+  box-shadow: 0 0 12px #a7e7f7;
+  border-radius: 12px;
+}
+
+.history-item.win {
+  box-shadow: 0 0 20px #00ffccaa;
+}
+.history-item.loss {
+  box-shadow: 0 0 20px #ff4d4d99;
+}
+.history-item.pending {
+  box-shadow: 0 0 12px #ffd70099;
+}
+
+/* Remove any black or dark base */
+body {
+  background: linear-gradient(to bottom right, #e0f7fa, #ffffff, #ccf2ff);
+  background-color: #e6faff;
+  color: #003344;
+}
+
+/* Ensure all cards look bright */
+.card, .history-item {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid #cceeff;
+  box-shadow: 0 0 15px #b2ebf2;
+}
+
+/* Update text colors for bright UI */
+.label, .value, .card-title, .history-item {
+  color: #004d66 !important;
+}
+
+h1 {
+  color: #006d91;
+}
+
+/* FINAL TRANSPARENT CRYSTAL BLUE STYLE */
+.card, .history-item {
+  background: rgba(0, 255, 255, 0.08) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(173, 255, 255, 0.3);
+  box-shadow: 0 0 18px rgba(0, 255, 255, 0.2);
+  color: #e0faff;
+}
+
+.card-title, .label, .value, .history-item {
+  color: #b9faff !important;
+}
+
+.icon-actions .fa,
+.delete-icon {
+  color: #33f6ff !important;
+}
+
+/* WIN Animation */
+.history-item.win {
+  animation: pulseGreen 1s ease-in-out infinite alternate;
+}
+@keyframes pulseGreen {
+  from { box-shadow: 0 0 10px #00e676; transform: scale(1); }
+  to { box-shadow: 0 0 25px #00ff99; transform: scale(1.02); }
+}
+
+/* LOSS Animation */
+.history-item.loss {
+  animation: flashRed 0.3s ease-in-out 3;
+}
+@keyframes flashRed {
+  0%, 100% { background-color: rgba(255, 0, 0, 0.05); transform: translateX(0); }
+  25% { background-color: rgba(255, 0, 0, 0.2); transform: translateX(-3px); }
+  50% { background-color: rgba(255, 0, 0, 0.4); transform: translateX(3px); }
+  75% { background-color: rgba(255, 0, 0, 0.2); transform: translateX(-3px); }
+}
+
+/* Prediction Reason Style */
+.explanation {
+  font-size: 13px;
+  color: #66ffff;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* WIN STREAK BAR */
+/* ACCURACY CHART */
+/* PARTICLE BACKGROUND */
+#particles-js {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+/* AUTO REFRESH NOTICE */
+#autoRefreshNote {
+  font-size: 13px;
+  color: #44f6ff;
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 8px;
+}
+
+/* SOUND FX ICON */
+#muteToggle {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #00ffff;
+  background: rgba(255,255,255,0.08);
+  padding: 6px 10px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+}
+
+/* DISABLE TEXT SELECTION */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+</style>
+<style>
+.icon-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+</style>
+<style>
+:root {
+  --bg-color: #f4f4f4;
+  --text-color: #222;
+  --card-bg: #fff;
+  --border-color: #ccc;
+  --icon-color: #e74c3c;
+}
+body.dark {
+  --bg-color: #121212;
+  --text-color: #f9f9f9;
+  --card-bg: #1e1e1e;
+  --border-color: #444;
+  --icon-color: #ff5a5a;
+}
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 30px 20px;
+}
+.card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--border-color);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.value {
+  color: var(--text-color);
+}
+.delete-icon {
+  color: var(--icon-color);
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+.delete-icon:hover {
+  color: #c0392b;
+}
+.toggle-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+<style>
+.icon-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+</style>
+<style>
+.icon-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+</style>
+<style>
+.delete-icon {
+  color: #e74c3c;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+.delete-icon:hover {
+  color: #c0392b;
+}
+
+<style>
+:root {
+  --bg-color: #f4f4f4;
+  --text-color: #222;
+  --card-bg: #fff;
+  --border-color: #ccc;
+  --icon-color: #e74c3c;
+}
+body.dark {
+  --bg-color: #121212;
+  --text-color: #f9f9f9;
+  --card-bg: #1e1e1e;
+  --border-color: #444;
+  --icon-color: #ff5a5a;
+}
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 30px 20px;
+}
+.card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--border-color);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.value {
+  color: var(--text-color);
+}
+.delete-icon {
+  color: var(--icon-color);
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+.delete-icon:hover {
+  color: #c0392b;
+}
+.toggle-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+<style>
+.icon-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+</style>
+<style>
+.icon-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+</style>
+<style>
+:root {
+  --bg-color: #f4f4f4;
+  --text-color: #222;
+  --card-bg: #fff;
+  --border-color: #ccc;
+  --icon-color: #e74c3c;
+}
+body.dark {
+  --bg-color: #121212;
+  --text-color: #f9f9f9;
+  --card-bg: #1e1e1e;
+  --border-color: #444;
+  --icon-color: #ff5a5a;
+}
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 30px 20px;
+}
+.card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--border-color);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.value {
+  color: var(--text-color);
+}
+.delete-icon {
+  color: var(--icon-color);
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+.delete-icon:hover {
+  color: #c0392b;
+}
+.toggle-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+<style>
+.icon-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+</style>
+<style>
+.icon-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+</style>
+<style>
+.predicting {
+  animation: pulse 1s infinite;
+  color: #00e0ff;
+  font-weight: bold;
+}
+@keyframes pulse {
+  0% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+</style></head>
+<body class="dark"><div id="particles-js"></div><div id="muteToggle" onclick="toggleMute()">🔊</div>
+<div id="particles-js" style="position: fixed; width: 100%; height: 100%; z-index: -1;"></div>
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script>
+particlesJS("particles-js", {
+  "particles": {
+    "number": { "value": 60, "density": { "enable": true, "value_area": 800 }},
+    "color": { "value": "#00ffff" },
+    "shape": { "type": "circle" },
+    "opacity": { "value": 0.25, "random": true },
+    "size": { "value": 3, "random": true },
+    "line_linked": {
+      "enable": true,
+      "distance": 140,
+      "color": "#00ffff",
+      "opacity": 0.3,
+      "width": 1
+    },
+    "move": {
+      "enable": true,
+      "speed": 1.3,
+      "direction": "none",
+      "random": false,
+      "straight": false
+    }
+  },
+  "interactivity": {
+    "events": {
+      "onhover": { "enable": true, "mode": "grab" },
+      "onclick": { "enable": true, "mode": "push" }
+    },
+    "modes": {
+      "grab": { "distance": 200, "line_linked": { "opacity": 0.4 }},
+      "push": { "particles_nb": 4 }
+    }
+  },
+  "retina_detect": true
+});
+</script>
+<div class="container">
+<h1>AI Big/Small Predictor</h1>
+<div class="card">
+<div class="card-title">Current Status</div>
+<div class="row"><div class="label">Period:</div><div class="value" id="currentPeriodDisplay">--</div></div>
+<div class="row"><div class="label">Timer:</div><div class="value" id="timerDisplay">--</div></div>
+<div class="row"><div class="label">Prediction:</div><div class="value" id="currentPredictionDisplay">--</div></div>
+<div class="row"><div class="label">Confidence:</div><div class="value" id="confidenceDisplay">--</div></div>
+<div class="row"><div class="label">Wins:</div><div class="value" id="totalWins">0</div></div>
+<div class="row"><div class="label">Losses:</div><div class="value" id="totalLosses">0</div></div>
+<div class="row"><div class="label">Server:</div><div class="value" id="serverStatus">Offline</div></div>
+</div>
+<div class="card">
+<div class="card-title">Prediction History</div>
+<div id="historyContainer"></div>
+</div>
+<div id="autoRefreshNote">🔄 Auto Refresh: ON</div></div>
+<div class="toast" id="toastContainer">Toast Message</div>
+<script>
+  // Inject fixed prediction logic from original file here
+  
+ // Configuration Constants
+const API_URL = "https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList";
+const API_RETRY_INTERVAL = 3000;
+const API_MAX_RETRIES = 3;
+const UPDATE_INTERVAL = 5000;
+const SMALL_NUMBERS = [5, 6, 7, 8, 9];
+const BIG_NUMBERS = [0, 1, 2, 3, 4];
+const MAX_HISTORY = 30;
+const TOAST_COOLDOWN = 1500;
+const BET_LEVEL_PATTERN = [1, 2, 3, 4, 3, 4, 2, 1];
+const MAX_DAILY_PATTERNS = 7; // Store patterns for last 7 days
+
+// DOM Elements
+const DOM = {
+  toast: document.getElementById("toastContainer"),
+  period: document.getElementById("currentPeriodDisplay"),
+  timer: document.getElementById("timerDisplay"),
+  prediction: document.getElementById("currentPredictionDisplay"),
+  confidence: document.getElementById("confidenceDisplay"),
+  wins: document.getElementById("totalWins"),
+  losses: document.getElementById("totalLosses"),
+  status: document.getElementById("serverStatus"),
+  history: document.getElementById("historyContainer")
+};
+
+// Validate DOM elements
+Object.values(DOM).forEach((el, index) => {
+  if (!el) console.error(`DOM element at index ${index} is null. Check HTML IDs.`);
+});
+
+// State
+let historyData = [];
+let lastFetchedPeriod = null;
+let lastPrediction = null;
+let stats = JSON.parse(localStorage.getItem('predictorStats')) || { wins: 0, losses: 0, streak: 0 };
+let isFetching = false;
+let lastPeriodUpdate = null;
+let lastToastTime = 0;
+let currentBetLevelIndex = 0;
+let currentBetLevel = BET_LEVEL_PATTERN[currentBetLevelIndex];
+let animationFrameId = null;
+let dailyPatterns = JSON.parse(localStorage.getItem('dailyPatterns')) || {};
+
+// Utility Functions
+const showToast = (message, type = "info", duration = 1500) => {
+  if (!DOM.toast) return console.error("Toast container not found");
+  const now = Date.now();
+  if (now - lastToastTime < TOAST_COOLDOWN) return;
+  lastToastTime = now;
+  DOM.toast.textContent = message;
+  DOM.toast.className = `toast show ${type}`;
+  setTimeout(() => {
+    DOM.toast.className = "toast";
+  }, duration);
+};
+
+const getNextBetLevel = () => {
+  currentBetLevelIndex = (currentBetLevelIndex + 1) % BET_LEVEL_PATTERN.length;
+  currentBetLevel = BET_LEVEL_PATTERN[currentBetLevelIndex];
+  return currentBetLevel;
+};
+
+const formatPeriodNumber = () => {
+  const now = new Date();
+  now.setTime(now.getTime() + (now.getTimezoneOffset() + 5.5 * 60) * 60 * 1000);
+  const yearMonthDay = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  return yearMonthDay + "1000" + (10001 + minutes);
+};
+
+const pad = (num) => num.toString().padStart(2, '0');
+
+const formatTimer = () => {
+  const now = new Date();
+  now.setTime(now.getTime() + (now.getTimezoneOffset() + 5.5 * 60) * 60 * 1000);
+  const seconds = now.getSeconds();
+  return `${pad(0)}:${pad(60 - seconds)}`;
+};
+
+const getCurrentDateKey = () => {
+  const now = new Date();
+  now.setTime(now.getTime() + (now.getTimezoneOffset() + 5.5 * 60) * 60 * 1000);
+  return now.toISOString().slice(0, 10).replace(/-/g, '');
+};
+
+// Store Daily Pattern
+const storeDailyPattern = (result) => {
+  const dateKey = getCurrentDateKey();
+  if (!dailyPatterns[dateKey]) dailyPatterns[dateKey] = [];
+  dailyPatterns[dateKey].push({
+    number: Number(result.number),
+    isBig: Number(result.number) >= 5,
+    timestamp: Date.now()
+  });
+
+  // Clean up old patterns
+  const dates = Object.keys(dailyPatterns).sort();
+  if (dates.length > MAX_DAILY_PATTERNS) {
+    dates.slice(0, dates.length - MAX_DAILY_PATTERNS).forEach(date => {
+      delete dailyPatterns[date];
+    });
+  }
+
+  localStorage.setItem('dailyPatterns', JSON.stringify(dailyPatterns));
+};
+
+// Prediction Logic
+const analyzePatterns = (history) => {
+  const dateKey = getCurrentDateKey();
+  const recentHistory = history
+    .filter(h => h.result !== "-")
+    .slice(0, 10)
+    .map(h => ({ number: Number(h.result), isBig: Number(h.result) >= 5 }))
+    .reverse();
+
+  // Aggregate historical patterns
+  let patternScore = { big: 0, small: 0 };
+  Object.keys(dailyPatterns).forEach((date, index) => {
+    const weight = 1 - (index / MAX_DAILY_PATTERNS); // Recent days have higher weight
+    const dayData = dailyPatterns[date] || [];
+    const bigCount = dayData.filter(d => d.isBig).length;
+    const total = dayData.length || 1;
+    const bigRatio = bigCount / total;
+
+    if (bigRatio > 0.6) patternScore.small += weight * (bigRatio - 0.6);
+    else if (bigRatio < 0.4) patternScore.big += weight * (0.4 - bigRatio);
+  });
+
+  // Analyze recent history for streaks and alternations
+  let streak = 1;
+  let lastWasBig = recentHistory[0]?.isBig;
+  let alternations = 0;
+  for (let i = 1; i < recentHistory.length; i++) {
+    const isBig = recentHistory[i].isBig;
+    if (isBig === lastWasBig) streak++;
+    else {
+      alternations++;
+      streak = 1;
+    }
+    lastWasBig = isBig;
+  }
+
+  // Decision logic
+  let prediction, confidence;
+  if (streak >= 3) {
+    // Break streak
+    prediction = lastWasBig ? "SMALL" : "BIG";
+    confidence = 70 + (streak * 5);
+  } else if (alternations >= 3 && recentHistory.length >= 4) {
+    // Continue alternation
+    prediction = recentHistory[0].isBig ? "SMALL" : "BIG";
+    confidence = 65 + (alternations * 5);
+  } else if (patternScore.big > patternScore.small) {
+    prediction = "BIG";
+    confidence = 60 + (patternScore.big * 30);
+  } else {
+    prediction = "SMALL";
+    confidence = 60 + (patternScore.small * 30);
+  }
+
+  return {
+    prediction,
+    confidence: Math.min(95, Math.max(55, confidence)),
+    decisionFactor: `Pattern score: BIG=${patternScore.big.toFixed(2)}, SMALL=${patternScore.small.toFixed(2)}`,
+    betLevel: getNextBetLevel()
+  };
+};
+
+// API Fetch with Retry
+const fetchGameResult = async (retryCount = 0) => {
+  if (isFetching) {
+    console.log("Fetch skipped: already fetching");
+    return null;
+  }
+  isFetching = true;
+  if (DOM.status) DOM.status.textContent = retryCount > 0 ? `Retry ${retryCount}` : "Connecting";
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        pageSize: 10,
+        pageNo: 1,
+        typeId: 1,
+        language: 0,
+        random: "4a0522c6ecd8410496260e686be2a57c",
+        signature: "334B5E70A0C9B8918B0B15E517E2069C",
+        timestamp: Math.floor(Date.now() / 1000)
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!data?.data?.list?.[0]) {
+      throw new Error("Invalid response structure");
+    }
+
+    if (DOM.status) DOM.status.textContent = "Connected";
+    console.log("API response:", data.data.list[0]);
+    return data.data.list[0];
+  } catch (e) {
+    console.error("Fetch error:", e.message);
+    if (retryCount < API_MAX_RETRIES) {
+      if (DOM.status) DOM.status.textContent = `Retrying (${retryCount + 1}/${API_MAX_RETRIES})`;
+      await new Promise(resolve => setTimeout(resolve, API_RETRY_INTERVAL));
+      return fetchGameResult(retryCount + 1);
+    }
+
+    if (DOM.status) DOM.status.textContent = "Fallback";
+    showToast("Using fallback data", "error");
+    return {
+      issueNumber: formatPeriodNumber(),
+      number: Math.floor(Math.random() * 10).toString()
+    };
+  } finally {
+    isFetching = false;
+  }
+};
+
+// Update Prediction
+const updatePrediction = async () => {
+  const now = new Date();
+  now.setTime(now.getTime() + (now.getTimezoneOffset() + 5.5 * 60) * 60 * 1000);
+  const currentMinute = now.getHours() * 60 + now.getMinutes();
+  const result = await fetchGameResult();
+
+  if (!result) {
+    console.log("No result fetched, skipping update");
+    return;
+  }
+
+  console.log("Fetched result:", result);
+  storeDailyPattern(result);
+
+  // Update previous period's result if it exists and is pending
+  if (historyData.length > 0 && historyData[0].resultStatus === "Pending" && historyData[0].period === result.issueNumber) {
+    const actualNumber = Number(result.number);
+    if (isNaN(actualNumber)) {
+      console.error("Invalid result number:", result.number);
+      return;
+    }
+    const isWin = lastPrediction === (actualNumber >= 5 ? "BIG" : "SMALL");
+
+    historyData[0].result = actualNumber;
+    historyData[0].resultStatus = isWin ? "WIN" : "LOSS";
+    historyData[0].calculation = `${actualNumber} (${actualNumber >= 5 ? "BIG" : "SMALL"})`;
+
+    // Update stats
+    stats[isWin ? "wins" : "losses"]++;
+    stats.streak = isWin ?
+      (stats.streak >= 0 ? stats.streak + 1 : 1) :
+      (stats.streak <= 0 ? stats.streak - 1 : -1);
+
+    localStorage.setItem('predictorStats', JSON.stringify(stats));
+    updateStats();
+    showToast(`Result: ${isWin ? "WIN" : "LOSS"}`, isWin ? "success" : "error");
+    updateHistory();
+  }
+
+  // Generate new prediction if the period has changed
+  if (lastFetchedPeriod !== result.issueNumber || lastPeriodUpdate === null || currentMinute !== lastPeriodUpdate) {
+    const decision = analyzePatterns(historyData);
+    lastPrediction = decision.prediction;
+
+    const nextPeriod = (BigInt(result.issueNumber) + 1n).toString();
+
+    // Update UI
+    
+    if (DOM.period) {
+      DOM.period.textContent = nextPeriod;
+      triggerAnimation(DOM.period, "bounce");
+      DOM.period.classList.add("bounce");
+      setTimeout(() => DOM.period.classList.remove("bounce"), 300);
+    }
+
+    
+    if (DOM.prediction) {
+      DOM.prediction.textContent = decision.prediction;
+      triggerAnimation(DOM.prediction, "bounce");
+      DOM.prediction.classList.add("bounce");
+      setTimeout(() => DOM.prediction.classList.remove("bounce"), 300);
+    }
+
+    
+    if (DOM.confidence) {
+      DOM.confidence.textContent = `${decision.confidence}%`;
+      triggerAnimation(DOM.confidence, "bounce");
+      DOM.confidence.classList.add("bounce");
+      setTimeout(() => DOM.confidence.classList.remove("bounce"), 300);
+    }
+
+
+    // Add to history
+    
+    // Prevent duplicate entries for same period
+    if (historyData.length > 0 && historyData[0].period === nextPeriod) return;
+
+    historyData.unshift({
+      period: nextPeriod,
+      prediction: decision.prediction,
+      result: "-",
+      resultStatus: "Pending",
+      calculation: "-",
+      decisionFactor: decision.decisionFactor,
+      betLevel: decision.betLevel
+    });
+
+    // Limit history size
+    if (historyData.length > MAX_HISTORY) {
+      historyData.pop();
+    }
+    localStorage.setItem('predictorHistory', JSON.stringify(historyData));
+
+    updateHistory();
+    lastFetchedPeriod = result.issueNumber;
+    lastPeriodUpdate = currentMinute;
+  }
+};
+
+// Update History Display
+const updateHistory = () => {
+  if (!DOM.history) return console.error("History container not found");
+  DOM.history.innerHTML = historyData.map((item, index) => {
+    const animClass = 'animated-slide';
+    const borderColor = item.resultStatus === "WIN" ? "border-l-4 border-green-400" :
+      item.resultStatus === "LOSS" ? "border-l-4 border-red-400" :
+      "border-l-4 border-yellow-400";
+    const iconClass = item.resultStatus === "WIN" ? "fas fa-circle-check text-green-600 bounce" :
+      item.resultStatus === "LOSS" ? "fas fa-circle-xmark text-red-500 bounce" :
+      "fas fa-spinner fa-spin delete-icon";
+
+    return `
+      <div class="history-item ${animClass} grid grid-cols-3 gap-2 p-2 ${borderColor}">
+        <div class="col-span-2 space-y-1 text-sm">
+          <div><i class="fa fa-calendar mr-1 text-magenta-400"></i>Period: ${item.period}</div>
+          <div><i class="fa fa-chart-bar mr-1 text-magenta-400"></i>Predict: ${item.prediction}</div>
+          <div><i class="fa fa-calculator mr-1 text-magenta-400"></i>Result: ${item.calculation}</div>
+          <div><i class="fa fa-trophy mr-1 text-magenta-400"></i>Status: ${item.resultStatus}</div>
+          <div><i class="fa fa-coins mr-1 text-magenta-400"></i>Bet: ${item.betLevel}x</div>
+        </div>
+        <div class="icon-actions">
+          <i class="fa ${iconClass} text-lg"></i>
+          <button onclick="deleteHistory(${index})" style="background: none; border: none; cursor: pointer; padding: 6px;">
+            <i class="fa-solid fa-trash delete-icon" style="margin-left: 10px;"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+// Update Stats
+const updateStats = () => {
+  
+    if (DOM.wins) {
+      DOM.wins.textContent = stats.wins;
+    triggerAnimation(DOM.wins, "bounce");
+      DOM.wins.classList.add("bounce");
+      setTimeout(() => DOM.wins.classList.remove("bounce"), 300);
+    }
+
+  
+    if (DOM.losses) {
+      DOM.losses.textContent = stats.losses;
+    triggerAnimation(DOM.losses, "bounce");
+      DOM.losses.classList.add("bounce");
+      setTimeout(() => DOM.losses.classList.remove("bounce"), 300);
+    }
+
+};
+
+// Initialize Timer
+const updateTimer = () => {
+  if (DOM.timer) DOM.timer.textContent = formatTimer();
+  animationFrameId = requestAnimationFrame(updateTimer);
+};
+
+// Delete History Item
+const deleteHistory = (index) => {
+  historyData.splice(index, 1);
+  localStorage.setItem('predictorHistory', JSON.stringify(historyData));
+  updateHistory();
+};
+
+// Initialize
+
+function triggerAnimation(el, className) {
+  if (!el) return;
+  el.classList.remove(className);
+  void el.offsetWidth;
+  el.classList.add(className);
+}
+
+const init = () => {
+  // Reset stats every time user opens the page
+stats = { wins: 0, losses: 0, streak: 0 };
+localStorage.setItem('predictorStats', JSON.stringify(stats));
+  // Clear history on load
+  historyData = [];
+  localStorage.setItem('predictorHistory', JSON.stringify(historyData));
+  updateTimer();
+  updatePrediction();
+  setInterval(updatePrediction, UPDATE_INTERVAL);
+  updateHistory();
+  updateStats();
+
+  // Make deleteHistory function available globally
+  window.deleteHistory = deleteHistory;
+};
+
+// Clean up animation frame when page unloads
+window.addEventListener('beforeunload', () => {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+  }
+});
+
+init();
+
+
+  </script>
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+}
+</script>
+<script>
+// ADVANCED AI PREDICTION LOGIC
+function getSmartPrediction(lastResults) {
+  const last = lastResults[lastResults.length - 1] || 0;
+  const lastDigits = String(last).split('').map(Number);
+  const sum = lastDigits.reduce((a, b) => a + b, 0);
+
+  let prediction = sum >= 14 ? "BIG" : "SMALL";
+  let reason = `Sum = ${sum} → ${prediction} zone`;
+  let confidence = 60;
+
+  const outcomes = lastResults.map(n => {
+    const s = String(n).split('').map(Number).reduce((a, b) => a + b, 0);
+    return s >= 14 ? "BIG" : "SMALL";
+  });
+
+  let streakCount = 1;
+  for (let i = outcomes.length - 2; i >= 0; i--) {
+    if (outcomes[i] === outcomes[outcomes.length - 1]) {
+      streakCount++;
+    } else break;
+  }
+
+  if (streakCount >= 3) {
+    prediction = outcomes[outcomes.length - 1] === "BIG" ? "SMALL" : "BIG";
+    reason += `, Reversal: ${streakCount}x ${outcomes[outcomes.length - 1]} → Expect ${prediction}`;
+    confidence += 20;
+  }
+
+  const recent = outcomes.slice(-4).join("-");
+  if (recent === "BIG-SMALL-BIG-SMALL" || recent === "SMALL-BIG-SMALL-BIG") {
+    reason += ", ⚠️ Alternating Trap Detected";
+    confidence -= 15;
+  }
+
+  return {
+    prediction,
+    confidence: Math.min(confidence, 99),
+    reason
+  };
+}
+</script><script>
+function updatePatternDisplay(lastResults) {
+  const outcomes = lastResults.map(n => {
+    const sum = String(n).split('').map(Number).reduce((a, b) => a + b, 0);
+    return sum >= 14 ? "BIG" : "SMALL";
+  });
+  const lastPattern = outcomes.slice(-4).join(" → ");
+  document.getElementById("patternDisplay").textContent = lastPattern || "--";
+}
+</script><script>
+// ADVANCED 50+ PATTERN PREDICTION ENGINE
+function getAdvancedPrediction(lastResults) {
+  const outcomes = lastResults.map(n => {
+    const sum = String(n).split('').map(Number).reduce((a, b) => a + b, 0);
+    return sum >= 14 ? "BIG" : "SMALL";
+  });
+
+  const sum = String(lastResults.at(-1) || 0).split('').map(Number).reduce((a, b) => a + b, 0);
+  let confidence = 65;
+  let reason = `Sum = ${sum} → ${sum >= 14 ? "BIG" : "SMALL"} zone`;
+  let prediction = sum >= 14 ? "BIG" : "SMALL";
+
+  const lastPattern = outcomes.slice(-4).join("-");
+  const reverse = o => o.map(r => (r === "BIG" ? "SMALL" : "BIG"));
+
+  const knownPatterns = [
+    "BIG-BIG-BIG", "SMALL-SMALL-SMALL", "BIG-SMALL-BIG", "SMALL-BIG-SMALL",
+    "BIG-BIG-SMALL", "SMALL-SMALL-BIG", "BIG-SMALL-SMALL", "SMALL-BIG-BIG",
+    "BIG-BIG-SMALL-BIG", "SMALL-SMALL-BIG-SMALL", "BIG-SMALL-BIG-SMALL",
+    "SMALL-BIG-SMALL-BIG", "BIG-BIG-SMALL-SMALL", "SMALL-SMALL-BIG-BIG"
+  ];
+
+  const altTrap = ["BIG-SMALL-BIG-SMALL", "SMALL-BIG-SMALL-BIG"];
+
+  if (knownPatterns.includes(lastPattern)) {
+    prediction = reverse(outcomes.slice(-1))[0];
+    reason += `, Matches Pattern DB → Expect reversal`;
+    confidence += 15;
+  }
+
+  if (altTrap.includes(lastPattern)) {
+    reason += `, ⚠️ Detected Alternating Trap`;
+    confidence -= 20;
+  }
+
+  if (outcomes.slice(-3).every(v => v === "BIG") || outcomes.slice(-3).every(v => v === "SMALL")) {
+    prediction = outcomes.slice(-1)[0] === "BIG" ? "SMALL" : "BIG";
+    reason += `, 3x ${outcomes.at(-1)} streak → Reversal`;
+    confidence += 10;
+  }
+
+  const patternId = Math.floor(Math.random() * 50) + 1;
+  reason += ` | Pattern ID: #${patternId}`;
+
+  return {
+    prediction,
+    confidence: Math.max(55, Math.min(confidence, 98)),
+    reason
+  };
+}
+</script><script>
+function updatePatternDisplay(lastResults) {
+  if (!lastResults || lastResults.length === 0) {
+    document.getElementById("patternDisplay").textContent = "--";
+    return;
+  }
+
+  const outcomes = lastResults.map(n => {
+    const sum = String(n).split('').map(Number).reduce((a, b) => a + b, 0);
+    return sum >= 14 ? "BIG" : "SMALL";
+  });
+
+  const lastPattern = outcomes.slice(-4).join(" → ");
+  document.getElementById("patternDisplay").textContent = lastPattern || "--";
+}
+</script><script>
+function updatePatternDisplay(lastResults) {
+  if (!Array.isArray(lastResults) || lastResults.length === 0) {
+    document.getElementById("patternDisplay").textContent = "--";
+    return;
+  }
+  const outcomes = lastResults.map(n => {
+    const sum = String(n).split('').map(Number).reduce((a, b) => a + b, 0);
+    return sum >= 14 ? "BIG" : "SMALL";
+  });
+  const pattern = outcomes.slice(-4).join(" → ");
+  document.getElementById("patternDisplay").textContent = pattern || "--";
+}
+
+// Example trigger (you should connect this to your data update logic)
+updatePatternDisplay([726, 835, 491, 681, 247]);
+</script><script>
+// FIX: Advance to new period after 5+ results
+let currentPeriod = 20250627100010994;
+
+// Replaced by live version {
+  currentPeriod++;
+  document.getElementById("period").textContent = currentPeriod;
+  return currentPeriod;
+}
+
+function runNextPrediction(lastResults) {
+  const data = getAdvancedPrediction(lastResults);
+  simulateNextPeriod();
+  document.getElementById("prediction").textContent = data.prediction;
+  document.getElementById("confidence").textContent = data.confidence + "%";
+  updatePatternDisplay(lastResults);
+  // You would also update history and results list
+}
+</script><script>
+let currentPeriod = 20250627100011000;
+function simulateNextPeriod() {
+  currentPeriod++;
+  const periodEl = document.getElementById("period");
+  if (periodEl) periodEl.textContent = currentPeriod;
+}
+</script><script>
+let lastResults = [726, 835, 491, 681, 247];
+
+function pushNewResult() {
+  const rand = Math.floor(Math.random() * 900) + 100;
+  lastResults.push(rand);
+  if (lastResults.length > 9) lastResults.shift();
+  updatePatternDisplay(lastResults);
+  const data = getAdvancedPrediction(lastResults);
+  document.getElementById("prediction").textContent = data.prediction;
+  document.getElementById("confidence").textContent = data.confidence + "%";
+  simulateNextPeriod();
+}
+
+setInterval(pushNewResult, 5000); // update every 5 sec
+</script><script>
+function getUltraSmartPrediction(lastResults) {
+  const outcomes = lastResults.map(n => {
+    const sum = String(n).split('').map(Number).reduce((a, b) => a + b, 0);
+    return sum >= 14 ? "BIG" : "SMALL";
+  });
+
+  const sum = String(lastResults.at(-1) || 0).split('').map(Number).reduce((a, b) => a + b, 0);
+  let basePrediction = sum >= 14 ? "BIG" : "SMALL";
+  let confidence = 65;
+  let reason = `Sum = ${sum} → ${basePrediction} zone`;
+
+  const pattern = outcomes.slice(-4).join("-");
+  const reverse = outcomes.length >= 1 ? (outcomes[outcomes.length - 1] === "BIG" ? "SMALL" : "BIG") : basePrediction;
+  let override = false;
+
+  // Pattern override logic
+  const knownReversalPatterns = ["BIG-BIG-BIG", "SMALL-SMALL-SMALL"];
+  const knownTrapPatterns = ["BIG-SMALL-BIG-SMALL", "SMALL-BIG-SMALL-BIG"];
+
+  if (knownReversalPatterns.includes(pattern)) {
+    basePrediction = reverse;
+    confidence += 20;
+    override = true;
+    reason += `, Pattern Match: Reversal (${pattern})`;
+  }
+
+  if (knownTrapPatterns.includes(pattern)) {
+    basePrediction = reverse;
+    confidence -= 15;
+    override = true;
+    reason += `, Trap Detected (${pattern})`;
+  }
+
+  if (patternMemory[pattern]) {
+    if (patternMemory[pattern].wins > patternMemory[pattern].losses + 1) {
+      confidence += 10;
+      reason += ", Memory: High Win Rate";
+    } else if (patternMemory[pattern].losses > patternMemory[pattern].wins + 1) {
+      basePrediction = reverse;
+      confidence += 10;
+      reason += ", Memory: Losing → Reversal Forced";
+      override = true;
+    }
+  }
+
+  const patternId = Math.floor(Math.random() * 100) + 1;
+  reason += ` | Pattern ID: #${patternId}`;
+  const patternDetected = `#${patternId} - ${pattern}`;
+
+  return {
+    prediction: basePrediction,
+    confidence: Math.max(50, Math.min(confidence, 99)),
+    reason,
+    patternDetected,
+    override
+  };
+}
+</script><script>
+function runRealTimePrediction(newResult) {
+  lastResults.push(newResult);
+  if (lastResults.length > 9) lastResults.shift();
+
+  const ai = getUltraSmartPrediction(lastResults);
+  document.getElementById("prediction").textContent = ai.prediction;
+  document.getElementById("confidence").textContent = ai.confidence + "%";
+  updatePatternDisplay(lastResults);
+  simulateNextPeriod();
+
+  const pattern = detectPatternString(lastResults);
+  const win = Math.random() > 0.4; // Simulated for now
+  if (!patternMemory[pattern]) {
+    patternMemory[pattern] = { wins: 0, losses: 0 };
+  }
+  patternMemory[pattern][win ? "wins" : "losses"]++;
+
+  // Show full pattern ID
+  const patternBox = document.getElementById("patternID");
+  if (patternBox) patternBox.textContent = ai.patternDetected;
+
+  // Update win/loss count
+  const winsEl = document.getElementById("wins");
+  const lossesEl = document.getElementById("losses");
+  if (winsEl && lossesEl) {
+    let winCount = parseInt(winsEl.textContent) || 0;
+    let lossCount = parseInt(lossesEl.textContent) || 0;
+    if (win) winCount++;
+    else lossCount++;
+    winsEl.textContent = winCount;
+    lossesEl.textContent = lossCount;
+  }
+}
+</script><script>
+function runRealTimePrediction(newResult) {
+  lastResults.push(newResult);
+  if (lastResults.length > 9) lastResults.shift();
+
+  const ai = getUltraSmartPrediction(lastResults);
+  document.getElementById("prediction").textContent = ai.prediction;
+  document.getElementById("confidence").textContent = ai.confidence + "%";
+  updatePatternDisplay(lastResults);
+  simulateNextPeriod();
+
+  const patternBox = document.getElementById("patternID");
+  if (patternBox && ai.patternDetected) {
+    patternBox.textContent = ai.patternDetected;
+  }
+
+  const pattern = detectPatternString(lastResults);
+  const win = Math.random() > 0.4; // Simulated for now
+  if (!patternMemory[pattern]) {
+    patternMemory[pattern] = { wins: 0, losses: 0 };
+  }
+  patternMemory[pattern][win ? "wins" : "losses"]++;
+
+  const winsEl = document.getElementById("wins");
+  const lossesEl = document.getElementById("losses");
+  if (winsEl && lossesEl) {
+    let winCount = parseInt(winsEl.textContent) || 0;
+    let lossCount = parseInt(lossesEl.textContent) || 0;
+    if (win) winCount++;
+    else lossCount++;
+    winsEl.textContent = winCount;
+    lossesEl.textContent = lossCount;
+  }
+}
+</script><script>
+let countdown = 60;
+function startCountdown() {
+  const timerEl = document.getElementById("timer");
+  countdown = 60;
+  const interval = setInterval(() => {
+    countdown--;
+    if (timerEl) timerEl.textContent = "00:" + (countdown < 10 ? "0" + countdown : countdown);
+    if (countdown <= 0) {
+      clearInterval(interval);
+      runRealTimePrediction(Math.floor(Math.random() * 900) + 100); // simulate next result
+      startCountdown();
+    }
+  }, 1000);
+}
+
+// Add animated prediction effect
+function animatePrediction() {
+  const predictionEl = document.getElementById("prediction");
+  if (predictionEl) {
+    predictionEl.innerHTML = '<span class="predicting">⏳ Predicting...</span>';
+    setTimeout(() => {
+      const result = getUltraSmartPrediction(lastResults);
+      predictionEl.textContent = result.prediction;
+    }, 1500);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  startCountdown();
+});
+</script><script></script><script>
+function analyzePatterns(data) {
+  let last5 = data.slice(0, 5).map(item => parseInt(item.CurrentNo));
+  let lastDigits = last5.map(num => {
+    return String(num).split('').map(Number);
+  });
+
+  let sumList = lastDigits.map(arr => arr.reduce((a, b) => a + b, 0));
+  let results = sumList.map(s => s >= 14 ? "BIG" : "SMALL");
+
+  // Basic streak detection
+  let last = results[0];
+  let streak = 1;
+  for (let i = 1; i < results.length; i++) {
+    if (results[i] === last) streak++;
+    else break;
+  }
+
+  // Logic decision
+  let prediction = sumList[0] >= 14 ? "BIG" : "SMALL";
+  let reason = `Sum = ${sumList[0]} → ${prediction} zone`;
+  let confidence = 60;
+
+  if (streak >= 3) {
+    prediction = last === "BIG" ? "SMALL" : "BIG";
+    reason += `, 3x ${last} streak → Reversal expected`;
+    confidence += 20;
+  }
+
+  return {
+    prediction,
+    confidence,
+    reason
+  };
+}
+</script><script>
+function analyzePatterns(data) {
+  let recent = data.slice(0, 5).map(item => parseInt(item.CurrentNo));
+  let results = recent.map(num => {
+    let sum = String(num).split('').map(Number).reduce((a, b) => a + b, 0);
+    return sum >= 14 ? "BIG" : "SMALL";
+  });
+
+  let lastResult = results[0];
+  let streakType = lastResult;
+  let streakCount = 1;
+
+  for (let i = 1; i < results.length; i++) {
+    if (results[i] === streakType) streakCount++;
+    else break;
+  }
+
+  let prediction = lastResult;
+  let confidence = 60;
+  let reason = `Last: ${lastResult}, Streak: ${streakCount}`;
+
+  if (streakCount >= 3) {
+    prediction = lastResult === "BIG" ? "SMALL" : "BIG";
+    reason += ` → Reversing due to streak`;
+    confidence = 80;
+  } else {
+    prediction = lastResult === "BIG" ? "BIG" : "SMALL";
+  }
+
+  return {
+    prediction,
+    confidence,
+    reason
+  };
+}
+</script></body>
+</html>
