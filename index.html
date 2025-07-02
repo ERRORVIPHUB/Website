@@ -1429,7 +1429,7 @@ function updatePeriodAndTimer() {
 
 async function fetchPage(page) {
     try {
-        const response = await fetch("https://api.fantasygamesapi.com", {
+        const response = await fetch("https://api.fantasygamesapi.com/api/webapi/GetNoaverageEmerdList", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
